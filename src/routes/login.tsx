@@ -46,7 +46,7 @@ function Login() {
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-emerald-600 mb-2">SIGFR</h1>
-          <p className="text-gray-500">Sistema Inteligente de Gestão de Filas</p>
+          <p className="text-gray-500">Sistema Inteligente de Gestão de Filas para Restaurantes</p>
         </div>
         
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
