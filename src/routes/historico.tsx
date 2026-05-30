@@ -28,7 +28,7 @@ function Historico() {
         <h2 className="text-2xl font-bold text-gray-800">Histórico de Atendimentos</h2>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex-1">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-auto flex-1">
         <table className="w-full text-left">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
