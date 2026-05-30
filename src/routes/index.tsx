@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { UserPlus, CheckCircle, Clock, Plus } from 'lucide-react';
+import { UserPlus, CheckCircle, Clock, Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import clsx from 'clsx';
@@ -50,6 +50,7 @@ function Dashboard() {
   const [showFilaModal, setShowFilaModal] = useState(false);
   const [nomeCliente, setNomeCliente] = useState('');
   const [quantidadePessoas, setQuantidadePessoas] = useState('');
+  const [clientToRemove, setClientToRemove] = useState<Fila | null>(null);
 
   // Mutations
   const addFilaMutation = useMutation({
@@ -62,6 +63,19 @@ function Dashboard() {
       setQuantidadePessoas('');
     },
     onError: (e: any) => toast.error(e.response?.data?.message || 'Erro ao adicionar cliente')
+  });
+
+  const removeFilaMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/fila/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fila'] });
+      toast.success('Cliente removido da fila');
+      if (selectedFila === clientToRemove?.id) {
+        setSelectedFila(null);
+      }
+      setClientToRemove(null);
+    },
+    onError: (e: any) => toast.error(e.response?.data?.message || 'Erro ao remover cliente')
   });
 
   const createMesaMutation = useMutation({
@@ -251,7 +265,19 @@ function Dashboard() {
                 <p className="font-bold text-gray-800">{f.nomeCliente}</p>
                 <p className="text-sm text-gray-500">{f.quantidadePessoas} pessoas</p>
               </div>
-              {selectedFila === f.id && <CheckCircle className="text-emerald-500" size={24} />}
+              <div className="flex items-center gap-3">
+                {selectedFila === f.id && <CheckCircle className="text-emerald-500" size={24} />}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setClientToRemove(f);
+                  }}
+                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                  title="Remover da fila"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
             </div>
           ))}
           
@@ -323,6 +349,36 @@ function Dashboard() {
                 <button type="submit" disabled={addFilaMutation.isPending} className="flex-1 px-4 py-3 text-white font-bold bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors">Adicionar</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmar Remoção Fila */}
+      {clientToRemove && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-xl font-bold mb-2">Remover Cliente</h3>
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja remover <strong>{clientToRemove.nomeCliente}</strong> da fila de espera?
+            </p>
+            
+            <div className="flex gap-2">
+              <button 
+                type="button" 
+                onClick={() => setClientToRemove(null)} 
+                className="flex-1 px-4 py-3 text-gray-600 font-bold bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                onClick={() => removeFilaMutation.mutate(clientToRemove.id)} 
+                disabled={removeFilaMutation.isPending} 
+                className="flex-1 px-4 py-3 text-white font-bold bg-red-600 hover:bg-red-700 rounded-xl transition-colors flex items-center justify-center"
+              >
+                {removeFilaMutation.isPending ? 'Removendo...' : 'Remover'}
+              </button>
+            </div>
           </div>
         </div>
       )}
